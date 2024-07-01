@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ohih.scheduler.user.UserMapper">
+
+    <!--  int checkEmailDuplication(String email);  -->
+    <select id="checkEmailDuplication" parameterType="String">
+        SELECT count(*)
+        FROM users
+        WHERE email = #{email};
+    </select>
+
+    <!--  int register(Register register);  -->
+    <insert id="register" parameterType="Register">
+        INSERT INTO users (email, password, username, position)
+        VALUES (#{email}, #{password}, #{username}, 0)
+    </insert>
+
+    <!--  int login(Login login);  -->
+    <select id="login" parameterType="Login" resultType="LoginInfo">
+        SELECT id, username, email, position
+        FROM users
+        WHERE email = #{email}
+          and password = #{password}
+    </select>
+
+</mapper>
