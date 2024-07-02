@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Ignore jQuery
+src/main/resources/static/jquery-3.7.1/
+
+# Ignore Bootstrap CSS
+src/main/resources/static/bootstrap-5.3.3-dist/
