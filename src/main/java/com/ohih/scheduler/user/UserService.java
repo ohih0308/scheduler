@@ -1,9 +1,6 @@
 package com.ohih.scheduler.user;
 
-import com.ohih.scheduler.user.dto.Login;
-import com.ohih.scheduler.user.dto.LoginInfo;
-import com.ohih.scheduler.user.dto.LoginResult;
-import com.ohih.scheduler.user.dto.Register;
+import com.ohih.scheduler.user.dto.*;
 import com.ohih.scheduler.utility.Utility;
 import com.ohih.scheduler.webConstant.ResponseCode;
 import com.ohih.scheduler.webConstant.UrlConst;
@@ -11,10 +8,14 @@ import com.ohih.scheduler.webConstant.ValidationPattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import static com.ohih.scheduler.webConstant.ResponseCode.LOGOUT_SUCCESS;
+import static com.ohih.scheduler.webConstant.UrlConst.HOME;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserMapper userMapper;
+    private final Utility utility;
 
 
     private boolean isEmailUnique(String email) {
@@ -25,9 +26,9 @@ public class UserService {
         int responseCode;
 
         boolean isEmailUnique = isEmailUnique(register.getEmail());
-        boolean isEmailValid = Utility.isValidated(ValidationPattern.EMAIL_DOMAIN_PATTERN, register.getEmail());
-        boolean isPasswordValid = Utility.isValidated(ValidationPattern.PASSWORD_PATTERN, register.getPassword());
-        boolean isUsernameValid = Utility.isValidated(ValidationPattern.USERNAME_PATTERN, register.getUsername());
+        boolean isEmailValid = utility.isValidated(ValidationPattern.EMAIL_DOMAIN_PATTERN, register.getEmail());
+        boolean isPasswordValid = utility.isValidated(ValidationPattern.PASSWORD_PATTERN, register.getPassword());
+        boolean isUsernameValid = utility.isValidated(ValidationPattern.USERNAME_PATTERN, register.getUsername());
 
         if (!isEmailUnique) {
             responseCode = ResponseCode.EMAIL_DUPLICATION_ERROR;
@@ -43,22 +44,26 @@ public class UserService {
         return responseCode;
     }
 
-    public int register(Register register) {
-        int responseCode = checkRegisterValidation(register);
+    public UserResponse register(Register register) {
+        UserResponse userResponse = new UserResponse();
+        userResponse.setResponseCode(checkRegisterValidation(register));
 
-        if (responseCode == ResponseCode.REGISTER_IS_VALIDATED) {
+        if (userResponse.getResponseCode() == ResponseCode.REGISTER_IS_VALIDATED) {
             userMapper.register(register);
-            responseCode = ResponseCode.REGISTER_SUCCESS;
+            userResponse.setResponseCode(ResponseCode.REGISTER_SUCCESS);
+            userResponse.setRedirectUrl(UrlConst.HOME);
+        } else {
+            userResponse.setRedirectUrl(UrlConst.REGISTER);
         }
 
-        return responseCode;
+        return userResponse;
     }
 
     private int checkLoginValidation(Login login) {
         int responseCode;
 
-        boolean isEmailValid = Utility.isValidated(ValidationPattern.EMAIL_DOMAIN_PATTERN, login.getEmail());
-        boolean isPasswordValid = Utility.isValidated(ValidationPattern.PASSWORD_PATTERN, login.getPassword());
+        boolean isEmailValid = utility.isValidated(ValidationPattern.EMAIL_DOMAIN_PATTERN, login.getEmail());
+        boolean isPasswordValid = utility.isValidated(ValidationPattern.PASSWORD_PATTERN, login.getPassword());
 
         if (!isEmailValid) {
             responseCode = ResponseCode.EMAIL_VALIDATION_ERROR;
@@ -87,10 +92,18 @@ public class UserService {
             loginResult.setRedirectUrl(UrlConst.LOGIN);
         } else {
             loginResult.setResponseCode(ResponseCode.LOGIN_SUCCESS);
-            loginResult.setRedirectUrl(UrlConst.SCHEDULER);
+            loginResult.setRedirectUrl(HOME);
             loginResult.setLoginInfo(loginInfo);
         }
 
         return loginResult;
+    }
+
+    public UserResponse logout() {
+        UserResponse userResponse = new UserResponse();
+        userResponse.setResponseCode(LOGOUT_SUCCESS);
+        userResponse.setRedirectUrl(HOME);
+
+        return userResponse;
     }
 }

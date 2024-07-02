@@ -1,0 +1,11 @@
+body {
+    background-color: #f8f9fa;
+}
+.main-container {
+    margin-top: 100px;
+    text-align: center;
+}
+.btn-custom {
+    margin: 10px;
+    width: 200px;
+}

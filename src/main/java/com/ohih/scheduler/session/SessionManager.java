@@ -10,4 +10,12 @@ public class SessionManager {
 
         session.setAttribute(SessionConst.LOGIN_INFO, loginInfo);
     }
+
+    public static void logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            session.removeAttribute(SessionConst.LOGIN_INFO);
+        }
+    }
 }

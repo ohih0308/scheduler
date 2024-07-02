@@ -3,6 +3,7 @@ package com.ohih.scheduler.user;
 import com.ohih.scheduler.session.SessionManager;
 import com.ohih.scheduler.user.dto.Login;
 import com.ohih.scheduler.user.dto.LoginResult;
+import com.ohih.scheduler.user.dto.UserResponse;
 import com.ohih.scheduler.user.dto.Register;
 import com.ohih.scheduler.webConstant.ResponseCode;
 import com.ohih.scheduler.webConstant.UrlConst;
@@ -18,17 +19,27 @@ public class UserRestController {
     private final UserService userService;
 
     @PostMapping(UrlConst.REGISTER)
-    public int register(@RequestBody Register register) {
+    public UserResponse register(@RequestBody Register register) {
         return userService.register(register);
     }
 
     @PostMapping(UrlConst.LOGIN)
     public LoginResult login(HttpServletRequest request, @RequestBody Login login) {
+
+        System.out.println("login = " + login.toString());
         LoginResult loginResult = userService.login(login);
 
         if (loginResult.getResponseCode() == ResponseCode.LOGIN_SUCCESS) {
             SessionManager.login(request, loginResult.getLoginInfo());
         }
+
+        System.out.println("loginResult.toString() = " + loginResult.toString());
         return loginResult;
+    }
+
+    @PostMapping(UrlConst.LOGOUT)
+    public UserResponse logout(HttpServletRequest request) {
+        SessionManager.logout(request);
+        return userService.logout();
     }
 }

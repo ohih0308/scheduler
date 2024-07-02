@@ -4,7 +4,8 @@ public interface ResponseCode {
     // Method Success  0~99
     int REGISTER_SUCCESS = 0;
     int LOGIN_SUCCESS = 1;
-    int EVENT_CREATION_SUCCESS = 2;
+    int LOGOUT_SUCCESS = 2;
+    int EVENT_CREATION_SUCCESS = 3;
 
     // Method Fail 100~199
     int LOGIN_FAILURE = 100;

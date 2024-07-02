@@ -13,13 +13,13 @@ public class UserController {
 
     @GetMapping(UrlConst.REGISTER)
     public String register(Model model) {
-        model.addAttribute("email_domain", EmailConst.EMAIL_DOMAIN);
+        model.addAttribute("emailSuffix", EmailConst.EMAIL_SUFFIX);
         return "register";
     }
 
     @GetMapping(UrlConst.LOGIN)
-    public String login() {
+    public String login(Model model) {
+        model.addAttribute("emailSuffix", EmailConst.EMAIL_SUFFIX);
         return "login";
     }
-
 }
