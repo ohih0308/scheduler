@@ -25,15 +25,11 @@ public class UserRestController {
 
     @PostMapping(UrlConst.LOGIN)
     public LoginResult login(HttpServletRequest request, @RequestBody Login login) {
-
-        System.out.println("login = " + login.toString());
         LoginResult loginResult = userService.login(login);
 
         if (loginResult.getResponseCode() == ResponseCode.LOGIN_SUCCESS) {
             SessionManager.login(request, loginResult.getLoginInfo());
         }
-
-        System.out.println("loginResult.toString() = " + loginResult.toString());
         return loginResult;
     }
 

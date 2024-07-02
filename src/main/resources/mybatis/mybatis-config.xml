@@ -6,5 +6,8 @@
 <configuration>
     <typeHandlers>
         <typeHandler handler="com.ohih.scheduler.config.typehandler.ListTypeHandler" javaType="java.util.List" jdbcType="VARCHAR"/>
+        <typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="com.ohih.scheduler.scheduler.dto.EventStatus" jdbcType="VARCHAR"/>
+        <typeHandler handler="com.ohih.scheduler.config.typehandler.EnumTypeHandler" javaType="com.ohih.scheduler.scheduler.dto.EventStatus" jdbcType="VARCHAR"/>
+        <typeHandler handler="org.apache.ibatis.type.LocalTimeTypeHandler" javaType="java.time.LocalTime" jdbcType="TIME"/>
     </typeHandlers>
 </configuration>

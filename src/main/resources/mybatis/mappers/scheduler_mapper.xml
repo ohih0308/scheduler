@@ -4,13 +4,22 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.ohih.scheduler.scheduler.SchedulerMapper">
-    <!--  int creatEvent(Event event);  -->
-    <insert id="createEvent" parameterType="Event">
+    <insert id="createEvent" parameterType="com.ohih.scheduler.scheduler.dto.Event">
         INSERT INTO events
-        (title, author_id, location, description, participants, start_date, end_date, start_time, end_time,
-         all_day)
-        VALUES (#{title}, #{authorId}, #{location}, #{description}, #{participants, typeHandler=com.ohih.scheduler.config.typehandler.ListTypeHandler},
+        (title, author_id, location, description, participants, start_date, end_date, start_time, end_time, all_day)
+        VALUES (#{title}, #{authorId}, #{location}, #{description},
+                #{participants, typeHandler=com.ohih.scheduler.config.typehandler.ListTypeHandler},
                 #{startDate}, #{endDate}, #{startTime}, #{endTime}, #{allDay})
     </insert>
+
+    <!--  List<Event> getEventsByMonth(LocalDate localDate);  -->
+    <select id="getEventsByMonth" parameterType="map" resultType="com.ohih.scheduler.scheduler.dto.EventRequest">
+        SELECT id, title, author_id AS authorId, location, description, participants, status,
+        start_date AS startDate, end_date AS endDate, start_time AS startTime, end_time AS endTime,
+        all_day AS allDay, created_at AS createdAt, updated_at AS updatedAt
+        FROM events
+        WHERE start_date &gt;= #{startOfMonth} AND end_date &lt;= #{endOfMonth}
+    </select>
+
 
 </mapper>

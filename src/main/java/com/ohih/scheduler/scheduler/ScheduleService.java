@@ -1,6 +1,7 @@
 package com.ohih.scheduler.scheduler;
 
 import com.ohih.scheduler.scheduler.dto.Event;
+import com.ohih.scheduler.scheduler.dto.EventRequest;
 import com.ohih.scheduler.webConstant.ResponseCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,25 +13,29 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ScheduleService {
     private final SchedulerMapper schedulerMapper;
+    private final EventValidator eventValidator;
 
+    public List<Integer> createEvent(Event event) {
+        List<Integer> validationResults = eventValidator.validateEvent(event);
 
-    public Event getEventById(int id) {
-        return schedulerMapper.getEventById(id);
+        for (int result : validationResults) {
+            if (result != ResponseCode.EVENT_IS_VALIDATED) {
+                return validationResults;
+            }
+        }
+
+        if (schedulerMapper.createEvent(event) == 1) {
+            validationResults.add(ResponseCode.EVENT_CREATION_SUCCESS);
+        } else {
+            validationResults.add(ResponseCode.EVENT_CREATION_FAILURE);
+        }
+        return validationResults;
     }
 
-    public List<Event> getEventsByMonth(LocalDate localDate) {
-        return schedulerMapper.getEventsByMonth(localDate);
-    }
+    public List<EventRequest> getEventsByMonth(LocalDate localDate) {
+        LocalDate startOfMonth = localDate.withDayOfMonth(1);
+        LocalDate endOfMonth = localDate.withDayOfMonth(localDate.lengthOfMonth());
 
-    public int creatEvent(Event event) {
-        return schedulerMapper.createEvent(event) == 1 ? ResponseCode.EVENT_CREATION_SUCCESS : ResponseCode.EVENT_CREATION_FAILURE;
-    }
-
-    public int deleteEventById(Event event) {
-        return 0;
-    }
-
-    public int modifyEventById(Event event) {
-        return 0;
+        return schedulerMapper.getEventsByMonth(startOfMonth, endOfMonth);
     }
 }

@@ -16,6 +16,21 @@ body, html {
     padding: 15px;
 }
 
+.fc-daygrid-day-events {
+    max-height: 100px; /* 셀 높이 설정 */
+    overflow: hidden;
+}
+
+.fc-daygrid-more-link {
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.fc-daygrid-more-link:hover {
+    text-decoration: underline;
+}
+
 .btn-small {
     font-size: 0.9rem;
     padding: 5px 10px;
@@ -33,4 +48,9 @@ body, html {
 
 .btn-success:hover {
     background-color: #218838;
+}
+
+#eventList {
+    max-height: 300px; /* 높이를 조정하여 필요한 만큼 설정하세요 */
+    overflow-y: auto;
 }
