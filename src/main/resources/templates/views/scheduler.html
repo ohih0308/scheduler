@@ -129,18 +129,16 @@
 
         <!-- 서버에서 받은 eventsJson 데이터를 포함하는 스크립트 -->
         <script th:inline="javascript" style="display: none">
-            // console.log(JSON.parse([[${eventsJson}]]));
-            let eventsJson = JSON.parse([[${eventsJson}]]);
+            let events = JSON.parse([[${eventsString}]]);
         </script>
 
         <script>
+
+            console.log(typeof events)
             document.addEventListener('DOMContentLoaded', function () {
 
-                console.log(eventsJson);
 
-                let eventList;
-
-                eventsJson.forEach((event) => {
+                events.forEach((event) => {
                     // 시작 날짜와 종료날짜가 다를경우 반복문을 돌려 날짜를 1씩 더하며 eventList에 추가한다
                 })
 
