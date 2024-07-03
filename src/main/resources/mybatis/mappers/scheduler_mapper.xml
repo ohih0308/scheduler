@@ -15,22 +15,25 @@
 
     <!--  List<Event> getEventsByMonth(LocalDate localDate);  -->
     <select id="getEventsByMonth" parameterType="map" resultType="com.ohih.scheduler.scheduler.dto.EventRequest">
-        SELECT id,
-               title,
-               author_id  AS authorId,
-               location,
-               description,
-               participants,
-               status,
-               start_date AS startDate,
-               end_date   AS endDate,
-               start_time AS startTime,
-               end_time   AS endTime,
-               all_day    AS allDay,
-               created_at AS createdAt,
-               updated_at AS updatedAt
-        FROM events
-        WHERE start_date &gt;= #{startOfMonth}
-          AND end_date &lt;= #{endOfMonth}
+        SELECT e.id,
+               e.title,
+               e.author_id  AS authorId,
+               u.username   AS authorName,
+               e.location,
+               e.description,
+               e.participants,
+               e.status,
+               e.start_date AS startDate,
+               e.end_date   AS endDate,
+               e.start_time AS startTime,
+               e.end_time   AS endTime,
+               e.all_day    AS allDay,
+               e.created_at AS createdAt,
+               e.updated_at AS updatedAt
+        FROM events e
+                 LEFT OUTER JOIN users u ON u.id = e.author_id
+        WHERE e.start_date &gt;= #{startOfMonth}
+          AND e.end_date &lt;= #{endOfMonth}
     </select>
+
 </mapper>

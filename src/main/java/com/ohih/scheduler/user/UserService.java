@@ -9,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import static com.ohih.scheduler.webConstant.ResponseCode.LOGOUT_SUCCESS;
-import static com.ohih.scheduler.webConstant.UrlConst.HOME;
+import static com.ohih.scheduler.webConstant.UrlConst.LOGIN;
+import static com.ohih.scheduler.webConstant.UrlConst.SCHEDULER;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +52,7 @@ public class UserService {
         if (userResponse.getResponseCode() == ResponseCode.REGISTER_IS_VALIDATED) {
             userMapper.register(register);
             userResponse.setResponseCode(ResponseCode.REGISTER_SUCCESS);
-            userResponse.setRedirectUrl(UrlConst.HOME);
+            userResponse.setRedirectUrl(UrlConst.LOGIN);
         } else {
             userResponse.setRedirectUrl(UrlConst.REGISTER);
         }
@@ -92,7 +93,7 @@ public class UserService {
             loginResult.setRedirectUrl(UrlConst.LOGIN);
         } else {
             loginResult.setResponseCode(ResponseCode.LOGIN_SUCCESS);
-            loginResult.setRedirectUrl(HOME);
+            loginResult.setRedirectUrl(SCHEDULER);
             loginResult.setLoginInfo(loginInfo);
         }
 
@@ -102,7 +103,7 @@ public class UserService {
     public UserResponse logout() {
         UserResponse userResponse = new UserResponse();
         userResponse.setResponseCode(LOGOUT_SUCCESS);
-        userResponse.setRedirectUrl(HOME);
+        userResponse.setRedirectUrl(LOGIN);
 
         return userResponse;
     }

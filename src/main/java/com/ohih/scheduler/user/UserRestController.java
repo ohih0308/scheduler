@@ -26,7 +26,7 @@ public class UserRestController {
     @PostMapping(UrlConst.LOGIN)
     public LoginResult login(HttpServletRequest request, @RequestBody Login login) {
         LoginResult loginResult = userService.login(login);
-
+        
         if (loginResult.getResponseCode() == ResponseCode.LOGIN_SUCCESS) {
             SessionManager.login(request, loginResult.getLoginInfo());
         }

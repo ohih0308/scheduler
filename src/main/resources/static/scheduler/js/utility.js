@@ -30,3 +30,12 @@ function unescapeHTML(str) {
         }
     });
 };
+
+function formatDate(dateArray, timeArray) {
+    var date = dateArray.map(num => String(num).padStart(2, '0')).join('-');
+    if (timeArray) {
+        var time = timeArray.map(num => String(num).padStart(2, '0')).join(':');
+        return date + 'T' + time;
+    }
+    return date;
+}

@@ -26,6 +26,7 @@ public class SchedulerController {
         List<EventRequest> events = scheduleService.getEventsByMonth(date);
 
         try {
+            model.addAttribute("eventsJson", events);
             ObjectMapper objectMapper = jacksonConfig.objectMapper();
             String eventsJson = objectMapper.writeValueAsString(events);
             model.addAttribute("eventsJson", eventsJson);
@@ -33,10 +34,5 @@ public class SchedulerController {
             e.printStackTrace();
         }
         return "scheduler";
-    }
-
-    @GetMapping("/demo")
-    public String demo() {
-        return "demo";
     }
 }

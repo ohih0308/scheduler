@@ -11,14 +11,18 @@ function login() {
 
 
     $.ajax({
-        url: '/login',
+        url: '/',
         type: 'POST',
         data: JSON.stringify({email: emailPrefix + emailSuffix, password: password}),
         contentType: 'application/json',
         success: function (userResponse) {
             getMessageByResponseCode(userResponse.responseCode).then(function (message) {
                 alert(message);
-                window.location.href = userResponse.redirectUrl;
+                var currentDate = new Date();
+                var month = currentDate.getMonth() + 1;
+                var year = currentDate.getFullYear();
+                window.location.href = userResponse.redirectUrl + "?month=" + month + "&year=" + year;
+
             }).catch(function (error) {
                 alert('오류 발생: ' + error);
             });

@@ -6,7 +6,7 @@
 <mapper namespace="com.ohih.scheduler.user.UserMapper">
 
     <!--  int checkEmailDuplication(String email);  -->
-    <select id="checkEmailDuplication" parameterType="String">
+    <select id="checkEmailDuplication" parameterType="String" resultType="int">
         SELECT count(*)
         FROM users
         WHERE email = #{email};
@@ -20,10 +20,16 @@
 
     <!--  int login(Login login);  -->
     <select id="login" parameterType="Login" resultType="LoginInfo">
-        SELECT id, username, email, position
-        FROM users
-        WHERE email = #{email}
-          and password = #{password}
+        SELECT u.id,
+               u.username,
+               u.email,
+               u.position,
+               d.name AS department
+        FROM users AS u
+                 JOIN
+             departments AS d ON u.department = d.id
+        WHERE u.email = #{email}
+          AND u.password = #{password};
     </select>
 
 </mapper>
