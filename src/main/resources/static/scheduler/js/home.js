@@ -34,7 +34,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (schedulerBtn) {
         schedulerBtn.addEventListener('click', function () {
-            location.href = "/scheduler";
+            var currentDate = new Date();
+            var month = currentDate.getMonth() + 1; // getMonth() returns 0-based index, so add 1
+            var year = currentDate.getFullYear();
+            var url = "/scheduler?month=" + month + "&year=" + year;
+            window.location.href = url;
         });
     }
 });

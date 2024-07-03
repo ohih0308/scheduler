@@ -24,10 +24,7 @@ public class SchedulerController {
     public String getSchedulerPage(@RequestParam("month") int month, @RequestParam("year") int year, Model model) {
         LocalDate date = LocalDate.of(year, month, 1);
         List<EventRequest> events = scheduleService.getEventsByMonth(date);
-        System.out.println("events.size() = " + events.size());
-        for (EventRequest eventRequest : events) {
-            System.out.println(eventRequest.toString());
-        }
+
         try {
             ObjectMapper objectMapper = jacksonConfig.objectMapper();
             String eventsJson = objectMapper.writeValueAsString(events);
@@ -38,5 +35,8 @@ public class SchedulerController {
         return "scheduler";
     }
 
+    @GetMapping("/demo")
+    public String demo() {
+        return "demo";
+    }
 }
-//http://localhost:8080/scheduler?month=7&year=2024
