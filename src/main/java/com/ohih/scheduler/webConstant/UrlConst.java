@@ -10,5 +10,5 @@ public interface UrlConst {
 
     String SCHEDULER = "/scheduler";
 
-
+    String EVENTS_BY_MONTH = "/events/by-month";
 }
