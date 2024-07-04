@@ -39,3 +39,10 @@ function formatDate(dateArray, timeArray) {
     }
     return date;
 }
+
+function ymdFormatter(date) {
+    let year = date.getFullYear();
+    let month = ('0' + (date.getMonth() + 1)).slice(-2);
+    let day = ('0' + date.getDate()).slice(-2);
+    return new Date(year, month - 1, day);
+}
