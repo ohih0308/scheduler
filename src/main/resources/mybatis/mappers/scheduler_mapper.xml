@@ -5,7 +5,7 @@
 
 <mapper namespace="com.ohih.scheduler.scheduler.SchedulerMapper">
     <!--  int createEvent(Event event);  -->
-    <insert id="createEvent" parameterType="com.ohih.scheduler.scheduler.dto.Event">
+    <insert id="createEvent" parameterType="com.ohih.scheduler.scheduler.dto.EventCreationRequest">
         INSERT INTO events
         (title, author_id, location, description, participants, start_date, end_date, start_time, end_time, all_day)
         VALUES (#{title}, #{authorId}, #{location}, #{description},

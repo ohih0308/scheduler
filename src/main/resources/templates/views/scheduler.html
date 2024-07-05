@@ -161,6 +161,16 @@
                 transform: translateY(-50%) rotate(180deg);
             }
 
+            .modal-dialog {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: calc(100vh - 1rem);
+            }
+
+            .modal-content {
+                margin: auto;
+            }
         </style>
     </head>
     <body>
@@ -196,21 +206,71 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="customModalLabel">일정 추가</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        일정 상세
+                        <form id="eventForm">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">제목</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="location" class="form-label">장소</label>
+                                <input type="text" class="form-control" id="location" name="location" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">상세</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                          required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="participants" class="form-label">참가자 (comma-separated)</label>
+                                <input type="text" class="form-control" id="participants" name="participants" required>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label for="startDate" class="form-label">시작 날짜</label>
+                                    <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                </div>
+                                <div class="col">
+                                    <label for="endDate" class="form-label">종료 날짜</label>
+                                    <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <div class="form-check d-flex justify-content-end">
+                                        <input class="form-check-input" type="checkbox" id="allDay" name="allDay">
+                                        <label class="form-check-label ms-2" for="allDay">All Day</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3" id="timeFields">
+                                <div class="col">
+                                    <label for="startTime" class="form-label text-nowrap">시작 시간</label>
+                                    <input type="time" class="form-control" id="startTime" name="startTime">
+                                </div>
+                                <div class="col">
+                                    <label for="endTime" class="form-label">종료 시간</label>
+                                    <input type="time" class="form-control" id="endTime" name="endTime">
+                                </div>
+                            </div>
+                        </form>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                        <button type="button" class="btn btn-primary">저장</button>
+                        <button type="button" class="btn btn-primary" onclick="saveEvent()">저장</button>
                     </div>
                 </div>
             </div>
         </div>
 
+
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 $('#toggleSidebarBtn').click(toggleSidebar);
+                $('#allDay').change(toggleTimeFields);
+                setTodayDatesForModal();
                 fetchAndInitializeEvents();
             });
 
@@ -362,12 +422,67 @@
             }
 
             function formatTime(timeArray) {
+                if (!timeArray) {
+                    return "00:00";
+                }
                 const [hours, minutes] = timeArray.map(unit => String(unit).padStart(2, '0'));
                 return `${hours}:${minutes}`;
             }
 
             function extractTimeFromISODate(isoDate) {
                 return isoDate.substring(11, 16);
+            }
+
+            function saveEvent() {
+                const form = document.getElementById('eventForm');
+                const formData = new FormData(form);
+                const event = {};
+
+                formData.forEach((value, key) => {
+                    if (key === 'participants') {
+                        event[key] = value.split(',').map(participant => participant.trim());
+                    } else if (key === 'allDay') {
+                        event[key] = value === 'on';
+                    } else if (key === 'startDate' || key === 'endDate') {
+                        event[key] = value ? new Date(value).toISOString().substring(0, 10) : null;
+                    } else if (key === 'startTime' || key === 'endTime') {
+                        event[key] = value ? value + ':00' : null;
+                    } else {
+                        event[key] = value;
+                    }
+                });
+
+                $.ajax({
+                    url: '/create-event',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(event),
+                    success: function (data) {
+                        alert(getMessageByResponseCode(data))
+                        location.reload();
+                    },
+                    error: function (error) {
+                        console.error('Error:', error);
+                    }
+                });
+            }
+
+            function toggleTimeFields() {
+                const allDayCheckbox = document.getElementById('allDay');
+
+                const timeFields = document.getElementById('timeFields');
+
+                if (allDayCheckbox.checked) {
+                    timeFields.style.display = 'none';
+                } else {
+                    timeFields.style.display = 'flex';
+                }
+            }
+
+            function setTodayDatesForModal() {
+                var today = new Date().toISOString().split('T')[0];
+                document.getElementById("startDate").value = today;
+                document.getElementById("endDate").value = today;
             }
 
         </script>

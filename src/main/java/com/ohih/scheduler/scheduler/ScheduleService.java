@@ -1,6 +1,6 @@
 package com.ohih.scheduler.scheduler;
 
-import com.ohih.scheduler.scheduler.dto.Event;
+import com.ohih.scheduler.scheduler.dto.EventCreationRequest;
 import com.ohih.scheduler.scheduler.dto.EventRequest;
 import com.ohih.scheduler.webConstant.ResponseCode;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,9 @@ public class ScheduleService {
     private final SchedulerMapper schedulerMapper;
     private final EventValidator eventValidator;
 
-    public List<Integer> createEvent(Event event) {
+    public List<Integer> createEvent(int userId, EventCreationRequest event) {
+        event.setAuthorId(userId);
+
         List<Integer> validationResults = eventValidator.validateEvent(event);
 
         for (int result : validationResults) {

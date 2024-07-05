@@ -1,51 +1,55 @@
 package com.ohih.scheduler.scheduler;
 
-import com.ohih.scheduler.scheduler.dto.Event;
-import com.ohih.scheduler.scheduler.dto.EventStatus;
+import com.ohih.scheduler.scheduler.dto.EventCreationRequest;
 import com.ohih.scheduler.utility.Utility;
 import com.ohih.scheduler.webConstant.ResponseCode;
 import com.ohih.scheduler.webConstant.ValidationPattern;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class EventValidator {
 
     private final Utility utility;
 
-    public EventValidator(Utility utility) {
-        this.utility = utility;
-    }
-
-    public List<Integer> validateEvent(Event event) {
+    public List<Integer> validateEvent(EventCreationRequest eventCreationRequest) {
         List<Integer> validationResults = new ArrayList<>();
 
-        validationResults.add(validateTitle(event.getTitle()));
-        validationResults.add(validateLocation(event.getLocation()));
-        validationResults.add(validateDescription(event.getDescription()));
-        validationResults.add(validateParticipants(event.getParticipants()));
-        validationResults.add(validateDate(event.getStartDate(), ResponseCode.START_DATE_VALIDATION_ERROR));
-        validationResults.add(validateDate(event.getEndDate(), ResponseCode.END_DATE_VALIDATION_ERROR));
-        validationResults.add(validateDateOrder(event.getStartDate(), event.getEndDate()));
-        validationResults.add(validateAllDay(event.getAllDay(), event.getStartTime(), event.getEndTime()));
+        validationResults.add(validateUserId(eventCreationRequest.getAuthorId()));
+        validationResults.add(validateTitle(eventCreationRequest.getTitle()));
+        validationResults.add(validateLocation(eventCreationRequest.getLocation()));
+        validationResults.add(validateDescription(eventCreationRequest.getDescription()));
+        validationResults.add(validateParticipants(eventCreationRequest.getParticipants()));
+        validationResults.add(validateDate(eventCreationRequest.getStartDate(), ResponseCode.START_DATE_VALIDATION_ERROR));
+        validationResults.add(validateDate(eventCreationRequest.getEndDate(), ResponseCode.END_DATE_VALIDATION_ERROR));
+        validationResults.add(validateDateOrder(eventCreationRequest.getStartDate(), eventCreationRequest.getEndDate()));
 
-        if (Boolean.FALSE.equals(event.getAllDay())) {
-            validationResults.add(validateTime(event.getStartTime(), ResponseCode.START_TIME_VALIDATION_ERROR));
-            validationResults.add(validateTime(event.getEndTime(), ResponseCode.END_TIME_VALIDATION_ERROR));
-            validationResults.add(validateTimeOrder(event.getStartDate(), event.getStartTime(), event.getEndDate(), event.getEndTime()));
+        validationResults.add(validateAllDay(eventCreationRequest.getAllDay(), eventCreationRequest.getStartTime(), eventCreationRequest.getEndTime()));
+
+        if (Boolean.FALSE.equals(eventCreationRequest.getAllDay())) {
+            validationResults.add(validateTime(eventCreationRequest.getStartTime(), ResponseCode.START_TIME_VALIDATION_ERROR));
+            validationResults.add(validateTime(eventCreationRequest.getEndTime(), ResponseCode.END_TIME_VALIDATION_ERROR));
+            validationResults.add(validateTimeOrder(eventCreationRequest.getStartDate(), eventCreationRequest.getStartTime(), eventCreationRequest.getEndDate(), eventCreationRequest.getEndTime()));
         }
 
-        validationResults.add(validateStatus(event.getStatus()));
-
-        validationResults.add(validateDateTimeNotPast(event.getStartDate(), event.getStartTime(), ResponseCode.START_DATE_TIME_PAST_ERROR));
-        validationResults.add(validateDateTimeNotPast(event.getEndDate(), event.getEndTime(), ResponseCode.END_DATE_TIME_PAST_ERROR));
+        validationResults.add(validateDateTimeNotPast(eventCreationRequest.getStartDate(), eventCreationRequest.getStartTime(), ResponseCode.START_DATE_TIME_PAST_ERROR));
+        validationResults.add(validateDateTimeNotPast(eventCreationRequest.getEndDate(), eventCreationRequest.getEndTime(), ResponseCode.END_DATE_TIME_PAST_ERROR));
 
         return validationResults;
+    }
+
+    private int validateUserId(Integer authorId) {
+        if (authorId == null) {
+            return ResponseCode.AUTHOR_ID_NULL_ERROR;
+        }
+        return ResponseCode.EVENT_IS_VALIDATED;
     }
 
     private int validateTitle(String title) {
@@ -113,13 +117,10 @@ public class EventValidator {
             if (startTime != null || endTime != null) {
                 return ResponseCode.ALLDAY_TIME_VALIDATION_ERROR;
             }
-        }
-        return ResponseCode.EVENT_IS_VALIDATED;
-    }
-
-    private int validateStatus(EventStatus status) {
-        if (status == null) {
-            return ResponseCode.STATUS_VALIDATION_ERROR;
+        } else {
+            if (startTime == null || endTime == null) {
+                return ResponseCode.ALLDAY_TIME_VALIDATION_ERROR;
+            }
         }
         return ResponseCode.EVENT_IS_VALIDATED;
     }

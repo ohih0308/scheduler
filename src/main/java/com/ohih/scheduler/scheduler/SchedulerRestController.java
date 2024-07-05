@@ -1,13 +1,10 @@
 package com.ohih.scheduler.scheduler;
 
-import com.ohih.scheduler.config.JacksonConfig;
-import com.ohih.scheduler.scheduler.dto.Event;
+import com.ohih.scheduler.scheduler.dto.EventCreationRequest;
 import com.ohih.scheduler.scheduler.dto.EventRequest;
+import com.ohih.scheduler.user.dto.LoginInfo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,7 +24,7 @@ public class SchedulerRestController {
     }
 
     @PostMapping(CREATE_EVENT)
-    public List<Integer> createEvent(@RequestBody Event event) {
-        return scheduleService.createEvent(event);
+    public List<Integer> createEvent(@SessionAttribute("loginInfo") LoginInfo loginInfo, @RequestBody EventCreationRequest event) {
+        return scheduleService.createEvent(loginInfo.getId(), event);
     }
 }

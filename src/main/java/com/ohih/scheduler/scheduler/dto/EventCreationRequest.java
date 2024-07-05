@@ -11,14 +11,13 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Event {
-    private Long id;
+@ToString
+public class EventCreationRequest {
     private String title;
-    private Long authorId;
+    private Integer authorId;
     private String location;
     private String description;
     private List<String> participants;
-    private EventStatus status;
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalTime startTime;
