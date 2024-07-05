@@ -10,7 +10,6 @@
         <script src="/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
         <script src="/fullcalendar-5.11.0/js/main.min.js"></script>
         <script src="/scheduler/js/utility.js" type="text/javascript"></script>
-        <script src="/scheduler/js/common.js" type="text/javascript"></script>
 
         <style>
             html, body {
@@ -41,7 +40,7 @@
 
             #calendar {
                 height: 80%;
-                width: 65%;
+                width: 80%;
             }
 
             .event-container {
@@ -64,16 +63,16 @@
                 margin-bottom: 20px;
             }
 
-            .card-header {
-                background-color: #2c3e50;
-                color: white;
-            }
-
             .card-body {
                 display: flex;
                 flex-direction: column;
                 overflow-y: auto;
                 height: 100%;
+            }
+
+            .card-header {
+                background-color: #2c3e50;
+                color: white;
             }
 
             .event-time {
@@ -104,17 +103,14 @@
             }
 
             .fc-daygrid-day-frame {
+                max-height: 100%;
                 height: 110px;
                 width: 100%;
-            }
-
-            .fc-daygrid-day-events {
-                max-height: 60%;
                 overflow-y: auto;
             }
 
-            .fc-daygrid-day-events::-webkit-scrollbar {
-                /*display: none;*/
+            .fc-daygrid-day-frame::-webkit-scrollbar {
+                display: none;
             }
 
             .fc-daygrid-event-dot {
@@ -140,6 +136,9 @@
                 font-size: 1em;
                 display: inline-block;
                 max-width: 100%;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
             .toggle-btn {
@@ -160,7 +159,6 @@
                 left: 0;
                 transform: translateY(-50%) rotate(180deg);
             }
-
         </style>
     </head>
     <body>
@@ -210,9 +208,16 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                $('#toggleSidebarBtn').click(hideSidebar);
-                getEvents().then(addBorderToDayEvents).catch(error => console.error(error));
+                $('#toggleSidebarBtn').click(toggleSidebar);
+                getEvents();
             });
+
+            function toggleSidebar() {
+                $('#eventContainer').toggleClass('collapsed');
+                setTimeout(function () {
+                    calendar.updateSize();
+                }, 310); // transition 시간 이후에 updateSize 호출
+            }
 
             var calendar;
 
@@ -236,25 +241,25 @@
                     },
                     events: events,
                     dateClick: function (info) {
-                        showSidebar(info.dateStr);
-                        writeEventList(info.dateStr, events);
+                        showSidebar(info.dateStr, events);
                     },
                     eventClick: function (info) {
-                        let eventDateStr = formatDate(info.event.start);
-                        showSidebar(eventDateStr);
-                        writeEventList(eventDateStr, events);
+                        showEventDetails(info.event);
                     }
                 });
                 calendar.render();
             }
 
-            function showSidebar(dateStr) {
+            function showSidebar(dateStr, events) {
                 $('#eventContainer').removeClass('collapsed');
                 $('#selectedDate').text(dateStr);
-            }
 
-            function writeEventList(dateStr, events) {
-                const selectedEvents = events.filter(event => formatDate(new Date(event.start)) === dateStr);
+                const selectedEvents = events.filter(event => {
+                    const eventDate = ymdFormatter(new Date(event.start));
+                    const selectedDate = ymdFormatter(new Date(dateStr));
+                    return eventDate.getTime() === selectedDate.getTime();
+                });
+
                 selectedEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
 
                 const eventListItems = $('#eventListItems');
@@ -263,37 +268,88 @@
                     eventListItems.append('<li class="list-group-item">이벤트 없음</li>');
                 } else {
                     selectedEvents.forEach(event => {
-                        const startTime = formatTime(new Date(event.start));
-                        const endTime = formatTime(new Date(event.end));
-                        eventListItems.append(`
-                <li class="list-group-item event-item" data-event-id="${event.id}">
-                    <div class="event-time">${startTime} - ${endTime}</div>
-                    <div class="event-title">${event.title}</div>
-                </li>
-            `);
+                        const startTime = new Date(event.start).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        const endTime = new Date(event.end).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        eventListItems.append(`<li class="list-group-item event-item" data-event-id="${event.id}">
+                <div class="event-time">${startTime} - ${endTime}</div>
+                <div class="event-title">${event.title}</div>
+            </li>`);
                     });
                 }
-                setTimeout(() => calendar.updateSize(), 310);
+
+                setTimeout(function () {
+                    calendar.updateSize();
+                }, 310);
             }
 
-            function hideSidebar() {
+            function showSidebarTemp(){
+                $('#eventContainer').removeClass('collapsed');
+                $('#selectedDate').text(dateStr);
+            }
+
+            function hideSidebar(){
                 $('#eventContainer').toggleClass('collapsed');
-                setTimeout(() => calendar.updateSize(), 310);
+                setTimeout(function () {
+                    calendar.updateSize();
+                }, 310);
             }
 
-            function writeEventDetails(event) {
+            function showEventList(dateStr, events){
+                const selectedEvents = events.filter(event => {
+                    const eventDate = ymdFormatter(new Date(event.start));
+                    const selectedDate = ymdFormatter(new Date(dateStr));
+                    return eventDate.getTime() === selectedDate.getTime();
+                });
+
+                selectedEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+                const eventListItems = $('#eventListItems');
+                eventListItems.empty();
+                if (selectedEvents.length === 0) {
+                    eventListItems.append('<li class="list-group-item">이벤트 없음</li>');
+                } else {
+                    selectedEvents.forEach(event => {
+                        const startTime = new Date(event.start).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        const endTime = new Date(event.end).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        eventListItems.append(`<li class="list-group-item event-item" data-event-id="${event.id}">
+                <div class="event-time">${startTime} - ${endTime}</div>
+                <div class="event-title">${event.title}</div>
+            </li>`);
+                    });
+                }
+
+                setTimeout(function () {
+                    calendar.updateSize();
+                }, 310);
+            }
+
+
+            function showEventDetails(event) {
                 $('#eventContent').html(`
-        <h5>${event.title}</h5>
-        <p><strong>시간:</strong> ${new Date(event.start).toLocaleString()}</p>
-        <p><strong>설명:</strong> ${event.extendedProps.description || '없음'}</p>
-        <p><strong>위치:</strong> ${event.extendedProps.location || '없음'}</p>`);
+                    <h5>${event.title}</h5>
+                    <p><strong>시간:</strong> ${new Date(event.start).toLocaleString()}</p>
+                    <p><strong>설명:</strong> ${event.extendedProps.description || '없음'}</p>
+                    <p><strong>위치:</strong> ${event.extendedProps.location || '없음'}</p>
+                `);
             }
 
             $(document).on('click', '.event-item', function () {
                 const eventId = $(this).data('event-id');
                 const event = calendar.getEventById(eventId);
                 if (event) {
-                    writeEventDetails(event);
+                    showEventDetails(event);
                 }
             });
 
@@ -302,28 +358,26 @@
                 let month = today.getMonth() + 1;
                 let year = today.getFullYear();
 
-                return new Promise((resolve, reject) => {
-                    $.ajax({
-                        url: '/events/by-month',
-                        type: 'POST',
-                        data: {year: year, month: month},
-                        success: function (events) {
-                            initializeCalendar(splitEventByDate(events));
-                            resolve();
-                        },
-                        error: function (error) {
-                            alert("ERROR");
-                            reject(error);
-                        }
-                    });
+                $.ajax({
+                    url: '/events/by-month',
+                    type: 'POST',
+                    data: {year: year, month: month},
+                    success: function (events) {
+                        initializeCalendar(splitEventByDate(events));
+                    },
+                    error: function () {
+                        alert("ERROR");
+                    }
                 });
             }
 
             function splitEventByDate(events) {
                 let splitEvents = [];
+
                 events.forEach(event => {
                     let startDate = new Date(event.startDate);
                     let endDate = new Date(event.endDate);
+
                     while (startDate <= endDate) {
                         let dailyEvent = {
                             id: event.id,
@@ -334,35 +388,14 @@
                             description: event.description,
                             location: event.location
                         };
+
                         splitEvents.push(dailyEvent);
+
                         startDate.setDate(startDate.getDate() + 1);
                     }
                 });
+
                 return splitEvents;
-            }
-
-            function formatDate(date) {
-                let year = date.getFullYear();
-                let month = String(date.getMonth() + 1).padStart(2, '0');
-                let day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-
-            function formatTime(date) {
-                return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-            }
-
-            function addBorderToDayEvents() {
-                const dayEvents = document.querySelectorAll('.fc-daygrid-day-events');
-                dayEvents.forEach(event => {
-                    if (event.scrollHeight > event.clientHeight) {
-                        console.log("event.scrollHeight: ", event.scrollHeight);
-                        console.log("event.clientHeight: ", event.clientHeight)
-
-                        event.parentElement.className += ' scroll-indicator';
-
-                    }
-                });
             }
         </script>
     </body>
