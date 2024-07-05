@@ -210,14 +210,14 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                $('#toggleSidebarBtn').click(hideSidebar);
-                getEvents().then(addBorderToDayEvents).catch(error => console.error(error));
+                $('#toggleSidebarBtn').click(toggleSidebar);
+                fetchAndInitializeEvents();
             });
 
-            var calendar;
+            let calendar;
 
             function initializeCalendar(events) {
-                var calendarEl = document.getElementById('calendar');
+                const calendarEl = document.getElementById('calendar');
                 calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
                     timeZone: 'local',
@@ -236,16 +236,24 @@
                     },
                     events: events,
                     dateClick: function (info) {
-                        showSidebar(info.dateStr);
-                        writeEventList(info.dateStr, events);
+                        handleDateClick(info.dateStr, events);
                     },
                     eventClick: function (info) {
-                        let eventDateStr = formatDate(info.event.start);
-                        showSidebar(eventDateStr);
-                        writeEventList(eventDateStr, events);
+                        handleEventClick(info.event, events);
                     }
                 });
                 calendar.render();
+            }
+
+            function handleDateClick(dateStr, events) {
+                showSidebar(dateStr);
+                writeEventList(dateStr, events);
+            }
+
+            function handleEventClick(event, events) {
+                const eventDateStr = formatDate(event.start);
+                showSidebar(eventDateStr);
+                writeEventList(eventDateStr, events);
             }
 
             function showSidebar(dateStr) {
@@ -263,8 +271,8 @@
                     eventListItems.append('<li class="list-group-item">이벤트 없음</li>');
                 } else {
                     selectedEvents.forEach(event => {
-                        const startTime = formatTime(new Date(event.start));
-                        const endTime = formatTime(new Date(event.end));
+                        const startTime = extractTimeFromISODate(event.start);
+                        const endTime = extractTimeFromISODate(event.end);
                         eventListItems.append(`
                 <li class="list-group-item event-item" data-event-id="${event.id}">
                     <div class="event-time">${startTime} - ${endTime}</div>
@@ -276,7 +284,7 @@
                 setTimeout(() => calendar.updateSize(), 310);
             }
 
-            function hideSidebar() {
+            function toggleSidebar() {
                 $('#eventContainer').toggleClass('collapsed');
                 setTimeout(() => calendar.updateSize(), 310);
             }
@@ -297,43 +305,32 @@
                 }
             });
 
-            function getEvents() {
-                let today = new Date();
-                let month = today.getMonth() + 1;
-                let year = today.getFullYear();
+            function fetchAndInitializeEvents() {
+                const today = new Date();
+                const month = today.getMonth() + 1;
+                const year = today.getFullYear();
 
-                return new Promise((resolve, reject) => {
-                    $.ajax({
-                        url: '/events/by-month',
-                        type: 'POST',
-                        data: {year: year, month: month},
-                        success: function (events) {
-                            initializeCalendar(splitEventByDate(events));
-                            resolve();
-                        },
-                        error: function (error) {
-                            alert("ERROR");
-                            reject(error);
-                        }
-                    });
+                $.ajax({
+                    url: '/events/by-month',
+                    type: 'POST',
+                    data: {year: year, month: month},
+                    success: function (events) {
+                        initializeCalendar(splitEventsByDate(events));
+                    },
+                    error: function (error) {
+                        alert("ERROR");
+                    }
                 });
             }
 
-            function splitEventByDate(events) {
-                let splitEvents = [];
+            function splitEventsByDate(events) {
+                const splitEvents = [];
                 events.forEach(event => {
-                    let startDate = new Date(event.startDate);
-                    let endDate = new Date(event.endDate);
+                    const startDate = new Date(event.startDate);
+                    const endDate = new Date(event.endDate);
+
                     while (startDate <= endDate) {
-                        let dailyEvent = {
-                            id: event.id,
-                            title: event.title,
-                            start: new Date(startDate),
-                            end: new Date(startDate),
-                            allDay: event.allDay,
-                            description: event.description,
-                            location: event.location
-                        };
+                        const dailyEvent = createDailyEvent(event, startDate);
                         splitEvents.push(dailyEvent);
                         startDate.setDate(startDate.getDate() + 1);
                     }
@@ -341,29 +338,38 @@
                 return splitEvents;
             }
 
+            function createDailyEvent(event, date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+
+                return {
+                    id: event.id,
+                    title: event.title,
+                    start: `${year}-${month}-${day}T${formatTime(event.startTime)}`,
+                    end: `${year}-${month}-${day}T${formatTime(event.endTime)}`,
+                    allDay: event.allDay,
+                    description: event.description,
+                    location: event.location
+                };
+            }
+
             function formatDate(date) {
-                let year = date.getFullYear();
-                let month = String(date.getMonth() + 1).padStart(2, '0');
-                let day = String(date.getDate()).padStart(2, '0');
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
                 return `${year}-${month}-${day}`;
             }
 
-            function formatTime(date) {
-                return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+            function formatTime(timeArray) {
+                const [hours, minutes] = timeArray.map(unit => String(unit).padStart(2, '0'));
+                return `${hours}:${minutes}`;
             }
 
-            function addBorderToDayEvents() {
-                const dayEvents = document.querySelectorAll('.fc-daygrid-day-events');
-                dayEvents.forEach(event => {
-                    if (event.scrollHeight > event.clientHeight) {
-                        console.log("event.scrollHeight: ", event.scrollHeight);
-                        console.log("event.clientHeight: ", event.clientHeight)
-
-                        event.parentElement.className += ' scroll-indicator';
-
-                    }
-                });
+            function extractTimeFromISODate(isoDate) {
+                return isoDate.substring(11, 16);
             }
+
         </script>
     </body>
 </html>

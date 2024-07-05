@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.ohih.scheduler.webConstant.UrlConst.CREATE_EVENT;
 import static com.ohih.scheduler.webConstant.UrlConst.EVENTS_BY_MONTH;
 
 @RestController
@@ -25,7 +26,7 @@ public class SchedulerRestController {
         return scheduleService.getEventsByMonth(date);
     }
 
-    @PostMapping("/create-event")
+    @PostMapping(CREATE_EVENT)
     public List<Integer> createEvent(@RequestBody Event event) {
         return scheduleService.createEvent(event);
     }
