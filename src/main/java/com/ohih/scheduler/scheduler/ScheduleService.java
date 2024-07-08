@@ -16,6 +16,7 @@ public class ScheduleService {
     private final EventValidator eventValidator;
 
     public List<Integer> createEvent(int userId, EventCreationRequest event) {
+        System.out.println("ScheduleService.createEvent");
         event.setAuthorId(userId);
 
         List<Integer> validationResults = eventValidator.validateEvent(event);
