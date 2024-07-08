@@ -171,6 +171,58 @@
             .modal-content {
                 margin: auto;
             }
+
+            .user-list-container {
+                display: flex;
+                justify-content: space-between;
+                height: 180px;
+            }
+
+            .user-container {
+                flex: 1;
+                padding: 10px;
+                margin: 5px;
+                border: 2px solid #ccc; /* 외곽선 스타일 통일 */
+            }
+
+            .participants-list {
+                height: 80%;
+                overflow-y: auto;
+            }
+
+            .user-container-middle {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                max-width: 20%;
+                border: none; /* 외곽선 제거 */
+            }
+
+            .section-title {
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+
+            .arrow-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .arrow {
+                margin: 5px 0;
+                padding: 5px;
+                cursor: pointer;
+            }
+
+            .user {
+                cursor: pointer;
+            }
+
+            .user.selected {
+                background-color: #cce5ff;
+                border-color: #004085;
+            }
         </style>
     </head>
     <body>
@@ -227,6 +279,36 @@
                                 <label for="participants" class="form-label">참가자 (comma-separated)</label>
                                 <input type="text" class="form-control" id="participants" name="participants" required>
                             </div>
+
+                            <div class="mb-3" id="userListContainer" style="display: none;">
+                                <div class="user-list-container">
+                                    <div class="user-container user-container-left">
+                                        <div class="section-title">Total User</div>
+                                        <div class="participants-list">
+                                            <div class="user">User 1</div>
+                                            <div class="user">User 2</div>
+                                            <div class="user">User 3</div>
+                                            <div class="user">User 4</div>
+                                            <div class="user">User 5</div>
+                                            <div class="user">User 6</div>
+                                        </div>
+                                    </div>
+                                    <div class="user-container user-container-middle">
+                                        <div class="arrow-container">
+                                            <img src="/scheduler/img/right-arrow.png" class="arrow add-user-arrow"
+                                                 id="addUserArrow"/>
+                                            <img src="/scheduler/img/left-arrow.png" class="arrow remove-user-arrow"
+                                                 id="removeUserArrow"/>
+                                        </div>
+                                    </div>
+                                    <div class="user-container user-container-right">
+                                        <div class="section-title">Selected User</div>
+                                        <div class="participants-list"></div>
+                                    </div>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="row mb-3">
                                 <div class="col">
                                     <label for="startDate" class="form-label">시작 날짜</label>
@@ -265,16 +347,22 @@
             </div>
         </div>
 
-
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 $('#toggleSidebarBtn').click(toggleSidebar);
                 $('#allDay').change(toggleTimeFields);
+                $('.user').click(selectUser);
+                $('#addUserArrow').click(addSelectedUsers);
+                $('#removeUserArrow').click(removeSelectedUsers);
+                $('#confirmParticipantsBtn').click(confirmParticipants);
+
                 setTodayDatesForModal();
                 fetchAndInitializeEvents();
+                sortUsersAscending('.user-container-left .participants-list');
             });
 
             let calendar;
+            let selectedUsers = [];
 
             function initializeCalendar(events) {
                 const calendarEl = document.getElementById('calendar');
@@ -290,6 +378,7 @@
                         customButton: {
                             text: '일정 추가',
                             click: function () {
+                                showUserList(); // 일정 추가 시 사용자 목록 표시
                                 $('#customModal').modal('show');
                             }
                         }
@@ -458,8 +547,10 @@
                     contentType: 'application/json',
                     data: JSON.stringify(event),
                     success: function (data) {
-                        alert(getMessageByResponseCode(data))
-                        location.reload();
+                        console.log(data)
+                        // alert(getMessageByResponseCode(data))
+                        // location.reload();
+                        console.log(data)
                     },
                     error: function (error) {
                         console.error('Error:', error);
@@ -483,6 +574,54 @@
                 var today = new Date().toISOString().split('T')[0];
                 document.getElementById("startDate").value = today;
                 document.getElementById("endDate").value = today;
+            }
+
+            function selectUser() {
+                $(this).toggleClass('selected');
+            }
+
+            function addSelectedUsers() {
+                const selectedUsers = $('.user-container-left .user.selected');
+                const userContainerRight = $('.user-container-right .participants-list');
+
+                selectedUsers.each(function () {
+                    $(this).removeClass('selected');
+                    $(this).appendTo(userContainerRight);
+                });
+                sortUsersAscending('.user-container-right .participants-list');
+            }
+
+            function removeSelectedUsers() {
+                const selectedUsers = $('.user-container-right .user.selected');
+                const userContainerLeft = $('.user-container-left .participants-list');
+
+                selectedUsers.each(function () {
+                    $(this).removeClass('selected');
+                    $(this).appendTo(userContainerLeft);
+                });
+                sortUsersAscending('.user-container-left .participants-list');
+            }
+
+            function sortUsersAscending(containerSelector) {
+                const container = $(containerSelector);
+                const users = container.children('.user').get();
+                users.sort((a, b) => $(a).text().localeCompare($(b).text()));
+                container.append(users);
+            }
+
+            function confirmParticipants() {
+                const selectedUsers = $('.user-container-right .user').map(function () {
+                    return $(this).text();
+                }).get().join(', ');
+
+                $('#participants').val(selectedUsers);
+                $('#userListContainer').hide();
+                $('#participantInputContainer').show();
+            }
+
+            function showUserList() {
+                $('#participantInputContainer').hide();
+                $('#userListContainer').show();
             }
 
         </script>

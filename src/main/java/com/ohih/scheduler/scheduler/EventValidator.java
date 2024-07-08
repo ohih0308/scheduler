@@ -22,6 +22,8 @@ public class EventValidator {
     public List<Integer> validateEvent(EventCreationRequest eventCreationRequest) {
         List<Integer> validationResults = new ArrayList<>();
 
+        setAllDayTimes(eventCreationRequest);
+
         validationResults.add(validateUserId(eventCreationRequest.getAuthorId()));
         validationResults.add(validateTitle(eventCreationRequest.getTitle()));
         validationResults.add(validateLocation(eventCreationRequest.getLocation()));
@@ -30,8 +32,6 @@ public class EventValidator {
         validationResults.add(validateDate(eventCreationRequest.getStartDate(), ResponseCode.START_DATE_VALIDATION_ERROR));
         validationResults.add(validateDate(eventCreationRequest.getEndDate(), ResponseCode.END_DATE_VALIDATION_ERROR));
         validationResults.add(validateDateOrder(eventCreationRequest.getStartDate(), eventCreationRequest.getEndDate()));
-
-        validationResults.add(validateAllDay(eventCreationRequest.getAllDay(), eventCreationRequest.getStartTime(), eventCreationRequest.getEndTime()));
 
         if (Boolean.FALSE.equals(eventCreationRequest.getAllDay())) {
             validationResults.add(validateTime(eventCreationRequest.getStartTime(), ResponseCode.START_TIME_VALIDATION_ERROR));
@@ -112,22 +112,27 @@ public class EventValidator {
         return ResponseCode.EVENT_IS_VALIDATED;
     }
 
-    private int validateAllDay(Boolean allDay, LocalTime startTime, LocalTime endTime) {
-        if (Boolean.TRUE.equals(allDay)) {
-            if (startTime != null || endTime != null) {
-                return ResponseCode.ALLDAY_TIME_VALIDATION_ERROR;
+    private void setAllDayTimes(EventCreationRequest eventCreationRequest) {
+        if (Boolean.TRUE.equals(eventCreationRequest.getAllDay())) {
+            LocalTime startTime = LocalTime.of(9, 0);
+            LocalTime endTime = LocalTime.of(18, 0);
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime eventStartDateTime = LocalDateTime.of(eventCreationRequest.getStartDate(), startTime);
+
+            if (now.isAfter(eventStartDateTime)) {
+                eventCreationRequest.setStartTime(now.toLocalTime());
+            } else {
+                eventCreationRequest.setStartTime(startTime);
             }
-        } else {
-            if (startTime == null || endTime == null) {
-                return ResponseCode.ALLDAY_TIME_VALIDATION_ERROR;
-            }
+
+            eventCreationRequest.setEndTime(endTime);
         }
-        return ResponseCode.EVENT_IS_VALIDATED;
     }
 
     private int validateDateTimeNotPast(LocalDate date, LocalTime time, int errorCode) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime dateTime = LocalDateTime.of(date, (time != null) ? time : LocalTime.MIN);
+
         if (dateTime.isBefore(now)) {
             return errorCode;
         }
